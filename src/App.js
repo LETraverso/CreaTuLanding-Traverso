@@ -19,11 +19,9 @@ function App() {
             />
           }
         />
-
        
         <Route path="/category/:categoryId" element={<ItemListContainer />} />
 
-        
         <Route path="/item/:id" element={<ItemDetailContainer />} />
 
         <Route path="*" element={<h2>404 - Página no encontrada</h2>} />

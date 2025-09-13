@@ -1,24 +1,51 @@
-export const products = [
-  { id: 1, title: "Tríptico Abstracto", price: 42000, category: "abstracto", description: "Set de 3 cuadros abstractos.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 2, title: "Hojas Monstera", price: 18000, category: "botanico", description: "Cuadro botánico estilo nórdico.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 3, title: "Mapa Urbano", price: 26000, category: "urbano", description: "Poster con mapa de ciudad minimalista.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 4, title: "Amanecer en la Playa", price: 35000, category: "paisaje", description: "Lienzo con paisaje marino al amanecer.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 5, title: "Montañas Nevadas", price: 39000, category: "paisaje", description: "Cuadro realista de montañas nevadas.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 6, title: "Buda Zen", price: 22000, category: "espiritual", description: "Cuadro minimalista con figura de Buda.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 7, title: "Nueva York Nocturna", price: 31000, category: "urbano", description: "Vista nocturna de rascacielos iluminados.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 8, title: "Selva Tropical", price: 27000, category: "botanico", description: "Pintura vibrante de vegetación tropical.", img: "https://via.placeholder.com/300x200?text=Abstracto" },
-  { id: 9, title: "Explosión de Colores", price: 45000, category: "abstracto", description: "Obra abstracta con mezcla de colores intensos.", img: "https://via.placeholder.com/300x200?text=Abstracto" }
-];
+import { db } from "./utils/firebase";
+import { collection, getDocs, getDoc, doc, query, where } from "firebase/firestore";
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const COL = "posts";
+const colRef = collection(db, COL);
 
+/**
+ * Lista de productos.
+ * - Sin parámetro: trae TODOS.
+ * - Con categoryId: filtra por el campo "category" (string).
+ * Devuelve el mismo shape que usabas: { id:number, title, price, category, description, img? }
+ * (Agrega _docId por si algún día lo necesitás; no rompe nada.)
+ */
 export async function fetchProducts(categoryId) {
-  await delay(500); 
-  if (!categoryId) return products;
-  return products.filter(p => p.category === categoryId);
+  const q = categoryId
+    ? query(colRef, where("category", "==", String(categoryId)))
+    : colRef;
+
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => {
+    const data = d.data();
+    // ⚠️ Conservamos tu id NUMÉRICO del mock, NO lo pisamos con el docId
+    return { ...data, _docId: d.id };
+  });
 }
 
+/**
+ * Un producto por id (numérico, el mismo que agregaste como campo "id" en cada doc).
+ * Si no existe, devuelve undefined (igual que tu mock original con .find()).
+ */
 export async function fetchProductById(id) {
-  await delay(500);
-  return products.find(p => String(p.id) === String(id));
+  // 1) Buscar por el CAMPO "id" (number)
+  const q = query(colRef, where("id", "==", Number(id)));
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    const d = snap.docs[0];
+    const data = d.data();
+    return { ...data, _docId: d.id };
+  }
+
+  // 2) (Fallback opcional) Si algún día usás docId = id
+  const ref = doc(db, COL, String(id));
+  const s = await getDoc(ref);
+  if (s.exists()) {
+    const data = s.data();
+    return { ...data, _docId: s.id };
+  }
+
+  // Igual que antes: si no hay resultado, undefined
+  return undefined;
 }
