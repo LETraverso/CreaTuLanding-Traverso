@@ -2,14 +2,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import ItemListContainer from "./components/ItemListContainer";
 import ItemDetailContainer from "./components/ItemDetailContainer";
-import "./css/App.css"
+import "./css/App.css";
+import { Cart } from "./components/cart";
 
 function App() {
   return (
     <BrowserRouter>
       <NavBar />
       <Routes>
-       
         <Route
           path="/"
           element={
@@ -19,11 +19,9 @@ function App() {
             />
           }
         />
-       
         <Route path="/category/:categoryId" element={<ItemListContainer />} />
-
         <Route path="/item/:id" element={<ItemDetailContainer />} />
-
+        <Route path="/cart" element={<Cart />} />
         <Route path="*" element={<h2>404 - Página no encontrada</h2>} />
       </Routes>
     </BrowserRouter>

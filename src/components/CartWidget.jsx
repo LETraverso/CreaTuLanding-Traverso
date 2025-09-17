@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import '../css/CartWidget.css';
+import { Link } from "react-router-dom";
+import { useCart } from "./cart";
+import "../css/CartWidget.css";
 
 const CartWidget = () => {
-  const [count, setCount] = useState(0);
-  const handleAdd = () => setCount(count + 1);
-
+  const { totalQuantity } = useCart();
   return (
-    <button className="cart-widget-button" onClick={handleAdd}>
-      🛒 {count}
-    </button>
+    <Link to="/cart" className="cart-widget-button" aria-label="Carrito">
+      🛒 <span className="cart-qty">{totalQuantity}</span>
+    </Link>
   );
 };
 
